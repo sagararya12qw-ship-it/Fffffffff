@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "AppUser": {
+      "title": "AppUser",
+      "description": "User account registration and wallet balance information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for this user" },
+        "username": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "walletBalance": { "type": "number" },
+        "bonusAmount": { "type": "number" },
+        "joinedMatches": { "type": "array", "items": { "type": "string" } },
+        "completedMatches": { "type": "array", "items": { "type": "string" } },
+        "fcmToken": { "type": "string" },
+        "gameNickname": { "type": "string" }
+      },
+      "required": ["uid", "username", "email", "phone", "walletBalance", "bonusAmount", "joinedMatches", "completedMatches"]
+    },
+    "Game": {
+      "title": "Game",
+      "description": "Information about a game supported in tournament rooms",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "activeMatchesCount": { "type": "number" }
+      },
+      "required": ["id", "name", "imageUrl", "activeMatchesCount"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "A scheduled match event for a specific game where users register and play",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gameId": { "type": "string" },
+        "title": { "type": "string" },
+        "matchDateTime": { "type": "string" },
+        "prizePool": { "type": "number" },
+        "perKill": { "type": "number" },
+        "entryFee": { "type": "number" },
+        "type": { "type": "string", "enum": ["Solo", "Duo", "Squad"] },
+        "version": { "type": "string", "enum": ["TPP", "FPP"] },
+        "map": { "type": "string" },
+        "totalSlots": { "type": "number" },
+        "joinedSlots": { "type": "number" },
+        "joinedUsers": { "type": "array", "items": { "type": "string" } },
+        "joinedUsernames": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["upcoming", "ongoing", "completed"] },
+        "imageUrl": { "type": "string" },
+        "roomId": { "type": "string" },
+        "roomPassword": { "type": "string" },
+        "announcementSent": { "type": "boolean" },
+        "resultDeclared": { "type": "boolean" }
+      },
+      "required": ["id", "gameId", "title", "matchDateTime", "prizePool", "perKill", "entryFee", "type", "version", "map", "totalSlots", "joinedSlots", "joinedUsers", "joinedUsernames", "status"]
+    },
+    "BannerItem": {
+      "title": "BannerItem",
+      "description": "Ad slides or announcement slides shown on user home views",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "deepLink": { "type": "string" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "title", "imageUrl", "deepLink", "active"]
+    },
+    "PushNotification": {
+      "title": "PushNotification",
+      "description": "Global or group custom notifications sent to client devices",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "targetTopic": { "type": "string" },
+        "targetMatchId": { "type": "string" }
+      },
+      "required": ["id", "title", "body", "sentAt"]
+    },
+    "WalletTransaction": {
+      "title": "WalletTransaction",
+      "description": "Wallet transactions including cash injections, withdrawals, entry fees, and prizes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "entry_fee", "winnings", "bonus"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "success", "failed", "Failed"] },
+        "paymentMethod": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "utrNo": { "type": "string" }
+      },
+      "required": ["id", "uid", "amount", "type", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/AppUser" },
+      "description": "Database-level primary accounts index"
+    },
+    "games/{gameId}": {
+      "schema": { "$ref": "#/entities/Game" },
+      "description": "Collection of supported tournament game categories"
+    },
+    "matches/{matchId}": {
+      "schema": { "$ref": "#/entities/Match" },
+      "description": "Scheduled tournament matchmaking rooms"
+    },
+    "banners/{bannerId}": {
+      "schema": { "$ref": "#/entities/BannerItem" },
+      "description": "Marketing and high-contrast media slides"
+    },
+    "notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/PushNotification" },
+      "description": "Announcement ledger history"
+    },
+    "transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/WalletTransaction" },
+      "description": "Financial ledger of deposit and withdrawal vouchers"
+    }
+  }
+}

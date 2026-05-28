@@ -1,0 +1,6 @@
+{
+  "appId": "io.ionic.kill2win",
+  "appName": "KILL 2 WIN",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

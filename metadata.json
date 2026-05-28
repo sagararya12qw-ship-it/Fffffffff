@@ -1,0 +1,6 @@
+{
+  "name": "KILL 2 WIN",
+  "description": "Premium Free Fire Tournament platform featuring KILL 2 WIN user app UI and administration management control panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,167 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net (default-deny catch-all)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Role-based Access Control (RBAC):
+    // Standard users must never be trusted. We recognize the project creator by verified email
+    // or through an explicit document in the 'admins' collection.
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == "machinech97@gmail.com" && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- ENTITY SPECIFIC SCHEMAS (Validation Blueprints) ---
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() <= 128
+        && data.username is string && data.username.size() <= 100
+        && data.email is string && data.email.size() <= 100
+        && data.phone is string && data.phone.size() <= 30
+        && data.walletBalance is number
+        && data.bonusAmount is number
+        && data.joinedMatches is list
+        && data.completedMatches is list;
+    }
+
+    function isValidTransaction(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.uid is string && data.uid.size() <= 128
+        && data.amount is number
+        && data.type is string && data.type.size() <= 50
+        && data.status is string && data.status.size() <= 50
+        && data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    function isValidMatch(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.gameId is string && data.gameId.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.matchDateTime is string && data.matchDateTime.size() <= 100
+        && data.prizePool is number
+        && data.perKill is number
+        && data.entryFee is number
+        && data.type is string && data.type.size() <= 20
+        && data.version is string && data.version.size() <= 20
+        && data.map is string && data.map.size() <= 100
+        && data.totalSlots is number
+        && data.joinedSlots is number
+        && data.joinedUsers is list
+        && data.joinedUsernames is list
+        && data.status is string && (data.status == "upcoming" || data.status == "ongoing" || data.status == "completed");
+    }
+
+    // --- COLLECTION RULE MATCHERS ---
+
+    // Collection: admins (Admin Privilege definitions)
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidId(adminId);
+    }
+
+    // Collection: users (Private account settings & wallet states)
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      // Only admins are permitted to list all registered users to protect user metadata & privacy
+      allow list: if isAdmin();
+      
+      // Enforce zero-funding validation on initialization
+      allow create: if isOwner(userId) && isValidUser(incoming()) && isValidId(userId);
+      
+      // Standard users can update their own user properties (like gameNickname or currently registered matches list)
+      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+        // Action: Join Match status alteration / profile updates
+        incoming().diff(existing()).affectedKeys().hasOnly(['joinedMatches', 'completedMatches', 'walletBalance', 'bonusAmount', 'gameNickname', 'fcmToken'])
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // Collection: games (Supported catalog of tournament games)
+    match /games/{gameId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(gameId);
+    }
+
+    // Collection: matches (Room schedules and allocations)
+    match /matches/{matchId} {
+      allow read: if true;
+      allow create, delete: if isAdmin() && isValidId(matchId);
+      
+      // Non-admin can only self-register themselves in upcoming match slot.
+      // Modifiers like fees, map, time can only be edited by an Admin.
+      allow update: if (isSignedIn() && isValidId(matchId) && isValidMatch(incoming()) && (
+        isAdmin() || (
+          // Standard check: verify standard game properties remain sealed, and standard only updates registration lists
+          incoming().diff(existing()).affectedKeys().hasOnly(['joinedSlots', 'joinedUsers', 'joinedUsernames', 'userSlots'])
+          && incoming().gameId == existing().gameId
+          && incoming().entryFee == existing().entryFee
+          && incoming().prizePool == existing().prizePool
+          && incoming().status == existing().status
+        )
+      ));
+
+      // Match Player specifics sub-collection
+      match /players/{playerId} {
+        allow read: if true;
+        allow write: if isAdmin() || isOwner(playerId);
+      }
+    }
+
+    // Collection: banners (Dashboard ads slider)
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(bannerId);
+    }
+
+    // Collection: notifications (Topic notifications record tracker)
+    match /notifications/{notifyId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(notifyId);
+    }
+
+    // Collection: transactions (Financial transaction ledger)
+    match /transactions/{txnId} {
+      // Users can only fetch and query their own financial vouchers to protect privacy
+      allow get: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (isAdmin() || resource.data.uid == request.auth.uid);
+      
+      // Users can create standard vouchers for themselves with pending status
+      allow create: if isSignedIn() && isValidId(txnId) && isValidTransaction(incoming()) && (
+        isAdmin() || (
+          incoming().uid == request.auth.uid 
+          && incoming().status == "pending"
+        )
+      );
+
+      // standard users are strictly denied from updating or falsifying payment states
+      allow update, delete: if isAdmin();
+    }
+  }
+}
