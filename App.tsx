@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction } from './types';
-import UserApp from './components/UserApp';
-import AdminPanel from './components/AdminPanel';
+import UserApp from './UserApp';
+import AdminPanel from './AdminPanel';
 import { 
   Gamepad2, Settings, ShieldCheck, Eye, EyeOff, LayoutGrid, Smartphone, Laptop, 
   Sparkles, Check, Database, Flame, HelpCircle
