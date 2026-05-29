@@ -3,8 +3,8 @@ import {
   PlusCircle, Database, Megaphone, Check, X, ShieldAlert, Coins, Users, Gamepad2, 
   Trash2, MessageSquare, Terminal, RefreshCw, Send, CheckCircle, Smartphone, Flame, ChevronRight, Download, FileCode, CheckSquare, Award, Settings
 } from 'lucide-react';
-import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction, JoinedUserDetail } from '../types';
-import { FIREBASE_GUIDE_CONTENT } from '../data/firebaseGuide';
+import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction, JoinedUserDetail } from './types';
+import { FIREBASE_GUIDE_CONTENT } from './firebaseGuide';
 
 interface AdminPanelProps {
   currentUser: AppUser;

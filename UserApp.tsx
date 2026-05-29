@@ -4,7 +4,7 @@ import {
   MapPin, ShieldAlert, Award, ChevronLeft, CreditCard, ArrowUpRight, 
   ArrowDownLeft, Send, CheckCircle2, MessageSquare, AlertCircle, Sparkles, Copy, Lock
 } from 'lucide-react';
-import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction } from '../types';
+import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import Kill2WinLogo from './Kill2WinLogo';
 
@@ -995,20 +995,20 @@ export default function UserApp({
                                               <div key={uid} className={`flex justify-between items-center p-1 py-1.5 px-2 rounded-lg text-[11px] border ${isMe ? 'bg-indigo-600/10 border-indigo-500/30' : 'bg-zinc-900/40 border-zinc-800/40'}`}>
                                                 <div className="flex items-center gap-1.5">
                                                   <span className={`w-4 h-4 rounded-md flex items-center justify-center font-bold font-mono text-[9px] ${
-                                                    score.rank === 1 ? 'bg-yellow-500 text-zinc-950 shadow' : 
-                                                    score.rank === 2 ? 'bg-slate-300 text-zinc-950' : 
-                                                    score.rank === 3 ? 'bg-amber-600 text-zinc-950' : 
+                                                    (score as any).rank === 1 ? 'bg-yellow-500 text-zinc-950 shadow' : 
+                                                    (score as any).rank === 2 ? 'bg-slate-300 text-zinc-950' : 
+                                                    (score as any).rank === 3 ? 'bg-amber-600 text-zinc-950' : 
                                                     'bg-zinc-800 text-zinc-400'
                                                   }`}>
-                                                    #{score.rank}
+                                                    #{(score as any).rank}
                                                   </span>
                                                   <span className={`font-semibold truncate max-w-[100px] ${isMe ? 'text-indigo-400 font-extrabold' : 'text-zinc-300'}`}>
-                                                    {score.username} {isMe && "(You)"}
+                                                    {(score as any).username} {isMe && "(You)"}
                                                   </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 font-mono text-[10px]">
-                                                  <span className="text-zinc-500 font-bold"><span className="text-zinc-300">{score.kills}</span> Kills</span>
-                                                  <span className="text-emerald-400 font-extrabold">₹{score.winnings}</span>
+                                                  <span className="text-zinc-500 font-bold"><span className="text-zinc-300">{(score as any).kills}</span> Kills</span>
+                                                  <span className="text-emerald-400 font-extrabold">₹{(score as any).winnings}</span>
                                                 </div>
                                               </div>
                                             );

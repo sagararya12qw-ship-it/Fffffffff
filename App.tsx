@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { AppUser, Match, Game, BannerItem, PushNotification, WalletTransaction } from './types';
-import UserApp from './components/UserApp';
-import AdminPanel from './components/AdminPanel';
+import UserApp from './UserApp';
+import AdminPanel from './AdminPanel';
+import AuthComponent from './AuthComponent';
 import { 
   Gamepad2, Settings, ShieldCheck, Eye, EyeOff, LayoutGrid, Smartphone, Laptop, 
-  Sparkles, Check, Database, Flame, HelpCircle
+  Sparkles, Check, Database, Flame, HelpCircle, LogOut
 } from 'lucide-react';
+import { useAuth } from './authHooks';
+import { signOutUser } from './authHooks';
 
 export default function App() {
+  // Firebase Authentication
+  const { user: firebaseUser, loading: authLoading } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   // Load states from LocalStorage or use realistic defaults (Starts empty for Matches as requested)
   
   // Default Games Categories

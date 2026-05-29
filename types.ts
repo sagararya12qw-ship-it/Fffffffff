@@ -14,6 +14,8 @@ export interface AppUser {
   completedMatches: string[];
   fcmToken?: string;
   gameNickname?: string; // Persisted game nickname
+  isAdmin?: boolean; // Admin flag for access control
+  createdAt?: string; // Account creation timestamp
 }
 
 export interface Game {
